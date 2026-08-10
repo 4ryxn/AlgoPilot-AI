@@ -1,3 +1,5 @@
+import time
+
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
@@ -11,8 +13,10 @@ HEADERS = {
     "Referer": "https://leetcode.com/",
     "User-Agent": "AlgoPilot-AI/1.0 (+https://algo-pilot-ai.vercel.app/)",
 }
-REQUEST_TIMEOUT = (5, 25)
+REQUEST_TIMEOUT = (3, 7)
 RETRY_STATUS_CODES = (429, 500, 502, 503, 504)
+CACHE_TTL_SECONDS = 600
+_CACHE = {}
 
 
 class LeetCodeError(Exception):
@@ -29,11 +33,11 @@ class LeetCodeUnavailable(LeetCodeError):
 
 def _build_session() -> requests.Session:
     retry = Retry(
-        total=2,
-        connect=2,
-        read=2,
-        status=2,
-        backoff_factor=0.75,
+        total=1,
+        connect=1,
+        read=1,
+        status=1,
+        backoff_factor=0.3,
         status_forcelist=RETRY_STATUS_CODES,
         allowed_methods=frozenset(["POST"]),
         respect_retry_after_header=True,
@@ -48,6 +52,22 @@ def _build_session() -> requests.Session:
 
 
 SESSION = _build_session()
+
+
+def _cache_get(key):
+    entry = _CACHE.get(key)
+    if not entry:
+        return None
+    expires_at, data = entry
+    if expires_at <= time.monotonic():
+        _CACHE.pop(key, None)
+        return None
+    return data
+
+
+def _cache_set(key, data):
+    _CACHE[key] = (time.monotonic() + CACHE_TTL_SECONDS, data)
+    return data
 
 
 def _post_graphql(query: str, variables: dict):
@@ -78,6 +98,7 @@ def _post_graphql(query: str, variables: dict):
     return payload
 
 def fetch_profile(username: str):
+    cache_key = ("profile", username.lower())
     query = """
     query userPublicProfile($username: String!) {
       matchedUser(username: $username) {
@@ -101,12 +122,19 @@ def fetch_profile(username: str):
       }
     }
     """
-    user = _post_graphql(query, {"username": username}).get("data", {}).get("matchedUser")
+    try:
+        user = _post_graphql(query, {"username": username}).get("data", {}).get("matchedUser")
+    except LeetCodeUnavailable:
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return cached
+        raise
     if not user:
         raise LeetCodeUserNotFound("LeetCode user not found.")
-    return user
+    return _cache_set(cache_key, user)
 
 def fetch_calendar(username: str, year=None):
+    cache_key = ("calendar", username.lower(), year)
     query = """
     query userProfileCalendar($username: String!, $year: Int) {
       matchedUser(username: $username) {
@@ -119,7 +147,13 @@ def fetch_calendar(username: str, year=None):
       }
     }
     """
-    user = _post_graphql(query, {"username": username, "year": year}).get("data", {}).get("matchedUser")
+    try:
+        user = _post_graphql(query, {"username": username, "year": year}).get("data", {}).get("matchedUser")
+    except LeetCodeUnavailable:
+        cached = _cache_get(cache_key)
+        if cached is not None:
+            return cached
+        raise
     if not user:
         raise LeetCodeUserNotFound("LeetCode user not found.")
-    return user.get("userCalendar")
+    return _cache_set(cache_key, user.get("userCalendar"))

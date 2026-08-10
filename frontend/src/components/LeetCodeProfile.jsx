@@ -9,7 +9,7 @@ export default function LeetCodeProfile() {
   useEffect(()=>{api("/leetcode/profile").then(setData).catch(e=>setError(e.message));},[]);
 
   if(error) return <div className="alert">LeetCode: {error}</div>;
-  if(!data) return <div className="card">Loading LeetCode profile...</div>;
+  if(!data) return <div className="card">Loading LeetCode stats...</div>;
 
   const stats = data.stats?.acSubmissionNum || [];
   const total = stats.find(x=>x.difficulty==="All")?.count ?? 0;
