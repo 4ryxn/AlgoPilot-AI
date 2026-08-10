@@ -4,7 +4,7 @@ import {api} from "../api";
 
 export default function Analytics(){
   const [profile,setProfile]=useState(null);const [calendar,setCalendar]=useState(null);const [error,setError]=useState("");
-  useEffect(()=>{Promise.all([api("/leetcode/profile"),api("/leetcode/calendar")]).then(([p,c])=>{setProfile(p);setCalendar(c)}).catch(e=>setError(e.message))},[]);
+  useEffect(()=>{Promise.allSettled([api("/leetcode/profile"),api("/leetcode/calendar")]).then(([p,c])=>{if(p.status==="fulfilled")setProfile(p.value);if(c.status==="fulfilled")setCalendar(c.value);const failed=[p,c].find(x=>x.status==="rejected");if(failed)setError(failed.reason.message)})},[]);
   const stats=profile?.stats?.acSubmissionNum||[];
   const count=d=>stats.find(x=>x.difficulty===d)?.count||0;
   return <main className="page"><p className="eyebrow">ANALYTICS</p><h1>Problem Solving Analytics</h1><p className="muted">Track solved count and activity.</p>
