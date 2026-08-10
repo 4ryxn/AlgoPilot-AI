@@ -29,4 +29,4 @@ app.include_router(report_router)
 
 @app.get("/")
 def root():
-    return {"message": "AlgoPilot-AI API is running 🚀", "docs": "/docs"}
+    return {"message": "AlgoPilot-AI API is running", "docs": "/docs"}
