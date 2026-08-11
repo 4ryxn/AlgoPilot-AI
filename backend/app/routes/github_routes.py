@@ -10,5 +10,5 @@ def profile(current_user=Depends(get_current_user)):
         raise HTTPException(400, "Add a GitHub username first.")
     try:
         return fetch_github(current_user.github_username)
-    except Exception as exc:
-        raise HTTPException(502, f"Unable to fetch GitHub profile: {exc}")
+    except Exception:
+        raise HTTPException(502, "GitHub profile is temporarily unavailable. Please try again later.")

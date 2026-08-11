@@ -1,8 +1,8 @@
 # AlgoPilot-AI
 
-**AI-powered DSA analytics, coaching, and interview preparation platform**
+**Portfolio-ready full-stack DSA analytics, coaching, and interview preparation MVP**
 
-AlgoPilot-AI helps developers prepare for coding interviews by bringing DSA progress tracking, profile analytics, and Gemini-powered coaching into one app. It connects public LeetCode and GitHub data with a protected dashboard, then lets users ask for problem-specific guidance, code review, hints, and interview-style prompts.
+AlgoPilot-AI helps developers prepare for coding interviews by bringing DSA progress tracking, profile analytics, and Gemini-powered coaching into one deployed MVP. It connects public LeetCode and GitHub data with a protected dashboard, then lets users ask for problem-specific guidance, code review, hints, and interview-style prompts.
 
 ## Live Demo
 
@@ -56,6 +56,12 @@ The AI Coach is exposed through the protected `/dashboard/ai` backend endpoint. 
 - Code Review: reviews a submitted approach or solution for correctness, bugs, edge cases, time and space complexity, code quality, and optimization opportunities.
 - Hint Generator: provides 2-4 progressive hints tailored to the submitted problem or code without immediately giving away the complete solution.
 - AI Interviewer: simulates an interviewer by asking follow-up questions, suggesting next steps, and nudging the user toward the right technique.
+
+## Starter / Planned Areas
+
+- OAuth routes currently provide starter authorization URL scaffolding only; OAuth callbacks and account linking are planned and are not implemented as full login flows yet.
+- PDF reporting is represented by a protected placeholder endpoint and is not shipped as a finished feature.
+- The roadmap and topic-analysis sections are starter planning views, not persistent personalized generation or historical topic analytics.
 
 ## Tech Stack
 
@@ -168,6 +174,7 @@ Variable names only. Do not commit real secrets.
 - `ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 - `FRONTEND_URL`
+- `BACKEND_URL`
 - `GEMINI_API_KEY`
 
 ### Optional OAuth
@@ -183,11 +190,14 @@ Variable names only. Do not commit real secrets.
 
 - `VITE_API_URL`
 
+Production deployment values are configured in the hosting dashboards. On Vercel, set `VITE_API_URL` to the Render backend URL. On Render, set `FRONTEND_URL` to the Vercel frontend URL and `BACKEND_URL` to the Render backend URL. Keep `DATABASE_URL`, `SECRET_KEY`, and `GEMINI_API_KEY` private.
+
 ## Deployment
 
 - Frontend: deployed on Vercel at https://algo-pilot-ai.vercel.app/
 - Backend: deployed on Render at https://algopilot-backend-mudn.onrender.com
 - Database: hosted on Neon PostgreSQL and connected to the Render backend through `DATABASE_URL`.
+- AI: Google Gemini API through backend-only `GEMINI_API_KEY`.
 
 ## Project Structure
 
@@ -251,6 +261,7 @@ AlgoPilot-AI/
 - Replace the current starter topic-analysis values with real topic-level performance data.
 - Add saved roadmap tasks, completion tracking, and personalized practice plans.
 - Complete OAuth callback flows and connected-account persistence.
+- Add database migrations for production schema changes.
 - Add automated backend route tests and frontend component tests.
 
 ## Author

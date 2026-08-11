@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
@@ -12,13 +14,21 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="AlgoPilot-AI API", version="1.0.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+frontend_urls = {
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "https://algo-pilot-ai.vercel.app",
-],
+}
+configured_frontend_url = os.getenv("FRONTEND_URL")
+if configured_frontend_url:
+    frontend_urls.update(
+        url.strip()
+        for url in configured_frontend_url.split(",")
+        if url.strip()
+    )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=sorted(frontend_urls),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
